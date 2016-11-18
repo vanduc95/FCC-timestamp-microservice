@@ -7,15 +7,13 @@ const express = require('express');
 const app = express();
 
 app.use(express.static(path.resolve(__dirname, 'client')));
-
 app.get('/:timestamp', (req,res) => {
-  var time;
-  if(/^\d{8,}$/.test(req.params.datestring)) {
-    time = moment(req.params.datestring, "X");
-  } else {
-    time = moment(req.params.datestring, "MMMM D, YYYY");
-  }
-  
+  let time = moment(req.params.timestamp, 'MMMM DD, YYYY', true); 
+
+  if (!time.isValid())
+    time = moment.unix(req.params.timestamp);
+
+
   if (!time.isValid()) {
     res.json({
       'unix': null,
