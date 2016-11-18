@@ -1,47 +1,33 @@
-var server = require('express');
-var app = server();
-var moment = require('moment');
-var fs = require('fs');
-var path = require('path');
+'use strict';
 
-var port = process.env.PORT || 3500;
+const path = require('path');
+const moment = require('moment');
 
-app.listen(port, function(){
-  console.log("Listening on port: " + port);
-});
+const express = require('express');
+const app = express();
 
-app.get('/', function(req, res) {
-  var fileName = path.join(__dirname, 'index.html');
-  res.sendFile(fileName, function (err) {
-    if (err) {
-      console.log(err);
-      res.status(err.status).end();
-    }
-    else {
-      console.log('Sent:', fileName);
-    }
-  });
-});
+app.use(express.static(path.resolve(__dirname, 'client')));
 
-app.get('/:datestring', function(req,res) {
-  var myDate;
+app.get('/:timestamp', (req,res) => {
+  var time;
   if(/^\d{8,}$/.test(req.params.datestring)) {
-    myDate = moment(req.params.datestring, "X");
+    time = moment(req.params.datestring, "X");
   } else {
-    myDate = moment(req.params.datestring, "MMMM D, YYYY");
+    time = moment(req.params.datestring, "MMMM D, YYYY");
   }
-
-  if(myDate.isValid()) {
+  
+  if (!time.isValid()) {
     res.json({
-      unix: myDate.format("X"),
-      natural: myDate.format("MMMM D, YYYY")
-    });
-  } else {
-    res.json({
-      unix: null,
-      natural: null
+      'unix': null,
+      'natural': null
     });
   }
-
-
+  else {
+    res.json({
+      'unix': time.format('X'),
+      'natural': time.format('MMMM DD, YYYY')
+    });
+  }
 });
+
+app.listen(process.env.PORT || 8080)
